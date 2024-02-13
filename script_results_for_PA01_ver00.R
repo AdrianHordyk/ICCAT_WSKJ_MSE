@@ -3,7 +3,7 @@
 ## meeting 2024...
 ##
 ## Maintainer: Datenkraft - SCRS/ICCAT (TT Species Group)
-## Author: Rodrigo Sant'Ana
+## Author: Bruno Mourato & Rodrigo Sant'Ana
 ## Created: seg fev  5 14:08:22 2024 (-0300)
 ## Version: 0.0.1
 ##

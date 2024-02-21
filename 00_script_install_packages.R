@@ -8,6 +8,8 @@
 
 install.packages(c('MSEtool', 'SAMtool'))
 
+packageVersion('MSEtool') # 3.7.2
+
 remotes::install_github('blue-matter/openMSE')
 
 remotes::install_github('ICCAT/nswo-mse')

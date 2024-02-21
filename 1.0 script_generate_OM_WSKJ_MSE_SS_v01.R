@@ -47,6 +47,9 @@ library(janitor)
 library(readxl)
 library(ggmse)
 
+if (packageVersion('MSEtool') < '3.7.2')
+  stop('Require latest version of MSEtool: `remotes::install_github("blue-matter/MSEtool")`')
+
 
 ## ----- Import OMs from SS3 ------ ##
 ##
@@ -72,10 +75,13 @@ SS_dirs <- c("WSKJ_EstRec93_Qnt25_h6", "WSKJ_EstRec93_Qnt50_h6", "WSKJ_EstRec93_
 
 ## Extract data from SS ##
 data <- SS2Data(file.path(SS_file_path, SS_dirs[1]))
-# add 2021/22 observed catch
-data@Cat <- cbind(data@Cat, matrix(obs_catches, nrow=1, ncol=length(obs_catches)))
-data@Year <- c(data@Year, 2021:2022)
-data@CV_Cat <- array(0.2, dim=dim(data@Cat))
+
+# # add 2021/22 observed catch
+# data@Cat <- cbind(data@Cat, matrix(obs_catches, nrow=1, ncol=length(obs_catches)))
+# data@CV_Cat <- array(0.2, dim=dim(data@Cat))
+# TO BE ADDED IN THE MPs
+
+
 # 5 indices used in assessment
 matplot(t(data@AddInd[1,,]), type='b')
 
@@ -108,14 +114,8 @@ for (i in seq_along(SS_dirs)) {
   om <- SS2OM(ssdir, nsim=nsim, proyears=proyears, interval = interval,
               Obs=Obs, Imp=Imp, Name=name)
 
-  # Add catchability parameter q = 1
-  # om@cpars$Find == fishing mortality
-  # this was missing from the `SS2OM` code - fixed in dev version
-  om@cpars$qs <- rep(1, om@nsim)
-
   # add data
   om@cpars$Data <- data
-
   OM_list[[i]] <- om
   rm(om)
 }

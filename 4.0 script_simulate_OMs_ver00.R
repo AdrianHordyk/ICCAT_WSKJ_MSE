@@ -66,15 +66,22 @@ path01 <- "00_OMs/"
 ######@> Loading data...
 
 ######@> Operating models...
+# OMs <- readRDS(paste0(path01,
+#                       "SS_Operating_models_v01_fullgrid_13082022.rds"),
+#                refhook = NULL)
+
+
 OMs <- readRDS(paste0(path01,
-                      "SS_Operating_models_v01_fullgrid_13082022.rds"),
+                      "SS_Operating_models_v01_fullgrid_16022024.rds"),
                refhook = NULL)
+
+
 
 #####@> Setting names for OMs...
 names(OMs) <- paste0("OM", sprintf("%03d", 1:27))
 
 ######@> Management procedures...
-source("script_prepare_MPs_ver00.R")
+source("2.0 script_prepare_MPs_ver00.R")
 
 #####@> Defining MPs...
 MPs <- c("NFref", "curE", "CC_15kt", "CC_20kt",

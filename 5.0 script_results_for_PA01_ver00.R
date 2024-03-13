@@ -148,7 +148,7 @@ for(i in seq_along(MSEs)) {
         names(val) <- mps
         val <- val %>%
             mutate(sim = 1:100) %>%
-            pivot_longer(names_to = "MP", values_to = "Values", 1:20)
+            pivot_longer(names_to = "MP", values_to = "Values", 1:ncol(val))
         nom <- pm@Name
         cap <- pm@Caption
         pm <- PMs[j]

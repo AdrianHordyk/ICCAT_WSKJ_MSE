@@ -3,7 +3,10 @@ title: "WSKJ MSE Review Notes"
 author: 
   - name: Adrian Hordyk <adrian@bluematterscience.com>
 date: "`r Sys.Date()`"
-output: rmdformats::robobook
+output: 
+  rmdformats::robobook:
+    number_sections: true
+urlcolor: blue
 ---
 
 ```{r knitr_options, include=FALSE}
@@ -14,9 +17,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This document describes a review of the code for the WSJK MSE and provides some comments for potential issues and suggestions for how to address them.
 
-The MSE code reviewed here is from the GitHub repository: <https://github.com/rodrigosantana/ICCAT_WSKJ_MSE>
+The MSE code reviewed here is from [this GitHub repository](https://github.com/rodrigosantana/ICCAT_WSKJ_MSE).
 
-I have forked the repository and the code for this document is available here: <https://github.com/AdrianHordyk/ICCAT_WSKJ_MSE/tree/main>. This repository also includes some other modified OMs and results, but much of those were exploratory and may not correspond with the workflow and code included in this document.
+I have forked the repository and the code for this document is available [here](https://github.com/AdrianHordyk/ICCAT_WSKJ_MSE). This repository also includes some other modified OMs and results, but much of those were exploratory and may not correspond with the workflow and code included in this document.
 
 ## General Overview
 
@@ -328,6 +331,8 @@ MPs <- c("NFref", "curE",
 source("2.0 script_prepare_MPs_ver00.R")
 ```
 
+### Reference MPs
+
 The first two MPs `NFref` and `curE` are No Fishing and Current Effort MPs from the `openMSE` packages, and are used for reference.
 
 ### Fixed TAC MPs
@@ -341,13 +346,11 @@ CC_15kt
 CC_15kt(1, WSKJ_Data)
 ```
 
-These MPs do not use data. These MPs do not have fixed catches/TAC for the initial projection years (see section below).
+These MPs are working as expected. They do not have fixed catches/TAC for the initial projection years (see section below).
 
 ### DLMtool Index-based MPs
 
 MPs 9 - 11 `GB_slope`, `Iratio`, and `Islope1` are MPs from the `DLMtool` package. These MP all use catch and index data (`Data@Cat`, `Data@Ind`, and `Data@CV_Ind`).
-
-These MPs do not have a data lag currently coded into them, and do not have fixed catches/TAC for the initial projection years.
 
 ```{r GB_slope}
 # TAC in first projection year
@@ -380,7 +383,28 @@ It is not a problem to run the SCA-based MP in the MSE, but important to note in
 
 `SP_100_40_SBMSY` and `SPSS_100_40_SBMSY` are both surplus production models and require only historical catches and an index of abundance. These MPs currently do not have a data lag coded into them, and do not have fixed catches/TAC for the initial projection years.
 
-`SP_03`, `SP_04`, `SP_05`, and `SP_06` also use a surplus production model, with a custom harvest control rule. The main difference between these MPs is the value of the tuning parameter and the type of surplus production model that is used. These MPs currently do not have a data lag coded into them, and do not have fixed catches/TAC for the initial projection years.
+```{r SP_100_40_SBMSY }
+SP_100_40_SBMSY(1, WSKJ_Data)
+```
+
+```{r SPSS_100_40_SBMSY}
+SPSS_100_40_SBMSY(1, WSKJ_Data)
+```
+
+`SP_03`, `SP_04`, `SP_05`, and `SP_06` also use a surplus production model, with a custom harvest control rule. The main difference between these MPs is the value of the tuning parameter and the type of surplus production model that is used.
+
+```{r SP_03}
+SP_03(1, WSKJ_Data)
+SP_04(1, WSKJ_Data)
+SP_05(1, WSKJ_Data)
+SP_06(1, WSKJ_Data)
+```
+
+> **Note**
+>
+> As demonstrated above, model-based MPs can sometimes return wildly different results, especially in terms of estimates of absolute scale of stock. Setting reasonably tight priors on parameters (as done with `SP_04` for example) can sometimes help stabilize the estimates. But that's more of an art than a science, and should be a warning to those who favor model-based MPs!
+>
+> Another option is to use the model-based MPs to estimate relative stock status, and make an iterative adjustment to the TAC based on that estimate (relative stock status is usually estimated more reliably than absolute magnitude)
 
 ## Notes on MPs
 
@@ -426,7 +450,7 @@ The `Catchdf` object must be available in the global environment for it to be us
 
 Currently only the `SP_` MPs appear to have a data lag built-into them. This may not be a problem if those MPs are the main candidates that are being proposed for management. If other MPs such as `Iratio` are being evaluated as candidates for adoption, a wrapper function needs to be created to add both the fixed catch and the data lag so that these MPs are comparable with the others.
 
-Here's a example for `Iratio` wiith a `Data_Lag` argument added:
+Here's a example for `Iratio` with a `Data_Lag` argument added:
 
 ```{r Iratio}
 Iratio_MOD <- function(x, Data, Data_Lag=1, ...) {
@@ -452,9 +476,13 @@ class(Iratio_MOD) <- 'MP'
 
 > **Note**:
 >
-> `Data_Lag = 1` means that if a TAC is being set for year y, data will be available up to year y-2
+> By default, data is available up to the year before a management measure will be implemented. For example, if setting a TAC for 2021, the model will simulate data up to and including 2020.
+>
+> `Data_Lag = 1` means that if a TAC is being set for year $y$, data will be available up to year $y-2$
 >
 > e.g., when setting a TAC for 2021, it will use data up to 2019
+>
+> The `Data_Lag` argument should be set to match the expected lag when the MP will be implemented. For example, if the MP will first be used to set a TAC for 2025, and catch and index data are available up to 2022, the `Data_Lag` argument should be set to `Data_Lag=2`
 
 ### Management Interval 
 
